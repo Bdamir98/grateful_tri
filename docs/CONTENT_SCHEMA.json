@@ -1,0 +1,179 @@
+{
+  "websiteContent": {
+    "home": {
+      "hero": {
+        "badge": {
+          "text": "Empowering Communities Worldwide",
+          "type": "text"
+        },
+        "title": {
+          "text": "Lives Waiting to Be Changed Through Your Digital Success",
+          "type": "text"
+        },
+        "subtitle": {
+          "text": "Join a revolutionary movement combining digital education with real-world impact. Your success helps children thrive.",
+          "type": "text"
+        },
+        "ctaText": {
+          "text": "Join the Projects",
+          "type": "text"
+        },
+        "videoBackground": {
+          "url": "/website-intro.mp4",
+          "type": "video"
+        },
+        "impactGoal": {
+          "value": 10000,
+          "type": "number"
+        }
+      },
+      "stats": {
+        "community": { "value": "10K+", "label": "Community Members" },
+        "countries": { "value": "50+", "label": "Countries Reached" },
+        "stories": { "value": "100+", "label": "Success Stories" },
+        "rate": { "value": "95%", "label": "Success Rate" }
+      },
+      "features": [
+        {
+          "icon": "heart",
+          "title": "Make an Impact",
+          "description": "Every action you take helps children in need. Your success directly contributes to changing lives."
+        },
+        {
+          "icon": "trending",
+          "title": "Earn While You Learn",
+          "description": "Access cutting-edge training in crypto, AI, and digital skills. Create multiple income streams."
+        },
+        {
+          "icon": "users",
+          "title": "Global Community",
+          "description": "Connect with like-minded individuals worldwide. Share knowledge, grow together, succeed together."
+        }
+      ]
+    },
+    "ourTribe": {
+      "hero": {
+        "badge": "Who We Are",
+        "title": "Who We Are",
+        "subtitle": "We're a community-driven organization dedicated to making a meaningful difference in the lives of those who need it most"
+      },
+      "features": [
+        {
+          "icon": "heart",
+          "title": "Our Mission",
+          "description": "Impact description here"
+        },
+        {
+          "icon": "dollar",
+          "title": "How We Work",
+          "description": "How we work description"
+        }
+      ],
+      "mission": {
+        "title": "Our Mission",
+        "subtitle": "Mission subtitle",
+        "description": "Mission description",
+        "image": "/mission-image.jpg"
+      },
+      "vision": {
+        "title": "Our Vision",
+        "subtitle": "Vision subtitle",
+        "description": "Vision description",
+        "image": "/vision-image.jpg"
+      }
+    },
+    "founder": {
+      "hero": {
+        "badge": "Meet Our Founder",
+        "title": "Sal Rehman",
+        "subtitle": "Visionary Leader & Social Entrepreneur",
+        "image": "/founder-hero.jpg",
+        "description": "Founder story"
+      },
+      "journey": {
+        "title": "The Journey",
+        "subtitle": "Journey subtitle",
+        "milestones": [
+          {
+            "year": "2020",
+            "title": "The Beginning",
+            "description": "Started the journey"
+          }
+        ]
+      },
+      "impact": {
+        "title": "Impact Created",
+        "stats": [
+          { "value": "10K+", "label": "Lives Changed" },
+          { "value": "50+", "label": "Countries" }
+        ]
+      }
+    },
+    "partnerWithUs": {
+      "hero": {
+        "title": "Partner With Us",
+        "subtitle": "Join our mission to create lasting impact",
+        "backgroundImage": "/partner-hero.jpg"
+      },
+      "benefits": [
+        {
+          "icon": "handshake",
+          "title": "Collaborative Growth",
+          "description": "Benefits description"
+        }
+      ],
+      "contactForm": {
+        "title": "Get In Touch",
+        "fields": ["name", "email", "organization", "message"]
+      }
+    },
+    "gallery": {
+      "hero": {
+        "title": "Our Gallery",
+        "subtitle": "Moments that matter"
+      },
+      "categories": ["All", "Events", "Projects", "Community", "Impact"]
+    },
+    "testimonials": {
+      "hero": {
+        "title": "Success Stories",
+        "subtitle": "Hear from our community members"
+      },
+      "featured": {
+        "enabled": true,
+        "count": 3
+      }
+    }
+  },
+  "theme": {
+    "colors": {
+      "primary": "#7c3aed",
+      "secondary": "#fbbf24",
+      "accent": "#ec4899",
+      "background": "#ffffff",
+      "text": "#1f2937",
+      "muted": "#6b7280"
+    },
+    "fonts": {
+      "heading": "Inter",
+      "body": "Inter",
+      "mono": "JetBrains Mono"
+    },
+    "spacing": {
+      "section": "80px",
+      "container": "1280px"
+    }
+  },
+  "siteSettings": {
+    "siteName": "The Grateful Tribe",
+    "tagline": "Empowering Communities Worldwide",
+    "logo": "/TGT-LOGO-removebg.png",
+    "favicon": "/favicon.ico",
+    "socialMedia": {
+      "facebook": "https://facebook.com/gratefultribe",
+      "twitter": "https://twitter.com/gratefultribe",
+      "instagram": "https://instagram.com/gratefultribe",
+      "linkedin": "https://linkedin.com/company/gratefultribe"
+    }
+  }
+}
