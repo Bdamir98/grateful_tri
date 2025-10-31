@@ -217,6 +217,7 @@ export interface CourseWithModules extends Course {
   modules: CourseModuleWithLessons[]
   totalDuration?: number
   totalLectures?: number
+  freeLectures?: number
 }
 
 export interface CourseModuleWithLessons extends CourseModule {

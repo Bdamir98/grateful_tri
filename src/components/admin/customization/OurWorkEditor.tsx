@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import { Save, Plus, Trash2, TrendingUp } from 'lucide-react'
+import { cache } from '@/lib/cache'
 
 interface ImpactStat {
   number: string
@@ -35,21 +36,7 @@ export function OurWorkEditor() {
     { number: '1000+', label: 'Meals Served', sublabel: 'Every single day' },
     { number: '12+', label: 'Communities', sublabel: 'Actively serving' }
   ])
-
-  const [projects, setProjects] = useState<WorkProject[]>([
-    {
-      id: '1',
-      category: 'Education',
-      title: '100 kids, 100 dreams. One big project 🎓',
-      description: 'Providing quality education and resources to underprivileged children in rural communities. Our comprehensive program includes school supplies, nutritious meals, and after-school tutoring.',
-      image: '',
-      details: [
-        'Distributed school supplies to 100+ students',
-        'Provided daily nutritious meals',
-        'Established after-school tutoring program'
-      ]
-    }
-  ])
+  const [projects, setProjects] = useState<WorkProject[]>([])
 
   useEffect(() => {
     loadContent()
@@ -69,8 +56,15 @@ export function OurWorkEditor() {
       }
 
       if (data?.content) {
-        if (data.content.stats) setStats(data.content.stats)
-        if (data.content.projects) setProjects(data.content.projects)
+        if (data.content.stats && Array.isArray(data.content.stats)) {
+          setStats(data.content.stats)
+        }
+        if (data.content.projects && Array.isArray(data.content.projects)) {
+          setProjects(data.content.projects)
+        }
+      } else {
+        // No data in database, keep default stats and empty projects
+        setProjects([])
       }
     } catch (error) {
       console.error('Error loading content:', error)
@@ -104,6 +98,10 @@ export function OurWorkEditor() {
       console.log('Save error:', error)
 
       if (error) throw error
+      
+      // Clear cache after saving
+      cache.clear('our_work_content')
+      
       alert('Our Work content saved successfully!')
     } catch (error: any) {
       console.error('Error saving:', error)
@@ -134,9 +132,14 @@ export function OurWorkEditor() {
   }
 
   const updateProject = (id: string, field: keyof WorkProject, value: any) => {
-    setProjects(projects.map(p => 
-      p.id === id ? { ...p, [field]: value } : p
-    ))
+    setProjects(prevProjects => {
+      return prevProjects.map((p, index) => {
+        if (p.id === id) {
+          return { ...p, [field]: value }
+        }
+        return p
+      })
+    })
   }
 
   const deleteProject = (id: string) => {
@@ -293,11 +296,19 @@ export function OurWorkEditor() {
                 {/* Image Upload */}
                 <div>
                   <Label>Project Image</Label>
-                  <ImageUpload
-                    label="Upload project image"
-                    currentImage={project.image}
-                    onUpload={(url: string) => updateProject(project.id, 'image', url)}
-                  />
+                  <div key={`image-container-${project.id}-${Date.now()}`}>
+                    <ImageUpload
+                      label={`Upload image for project ${index + 1}`}
+                      currentImage={project.image || ''}
+                      onUpload={(url: string) => {
+                        const updatedProjects = projects.map(p => 
+                          p.id === project.id ? { ...p, image: url } : p
+                        )
+                        setProjects(updatedProjects)
+                      }}
+                      storagePath={`projects/project-${project.id}`}
+                    />
+                  </div>
                 </div>
 
                 {/* Key Details */}

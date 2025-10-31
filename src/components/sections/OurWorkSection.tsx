@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase/client'
+import { cache } from '@/lib/cache'
 
 interface WorkProject {
   id: string
@@ -34,8 +35,17 @@ export function OurWorkSection() {
   }, [])
 
   const loadContent = async () => {
+    const cacheKey = 'our_work_content'
+    const cachedData = cache.get(cacheKey)
+    
+    if (cachedData) {
+      setStats(cachedData.stats)
+      setProjects(cachedData.projects)
+      setLoading(false)
+      return
+    }
+
     try {
-      console.log('Loading Our Work content...')
       const { data, error } = await supabase
         .from('page_content')
         .select('*')
@@ -43,26 +53,18 @@ export function OurWorkSection() {
         .eq('section_key', 'all')
         .maybeSingle()
 
-      console.log('Our Work data:', data)
-      console.log('Our Work error:', error)
-
-      if (error) {
-        console.error('Database error:', error)
+      const content = {
+        stats: data?.content?.stats || [
+          { number: '3000+', label: 'Lives Impacted', sublabel: 'Across our projects' },
+          { number: '1000+', label: 'Meals Served', sublabel: 'Every single day' },
+          { number: '12+', label: 'Communities', sublabel: 'Actively serving' }
+        ],
+        projects: data?.content?.projects || []
       }
-
-      if (data?.content) {
-        console.log('Found content:', data.content)
-        if (data.content.stats) {
-          console.log('Loading stats:', data.content.stats)
-          setStats(data.content.stats)
-        }
-        if (data.content.projects) {
-          console.log('Loading projects:', data.content.projects)
-          setProjects(data.content.projects)
-        }
-      } else {
-        console.log('No content found in database, using defaults')
-      }
+      
+      cache.set(cacheKey, content, 1)
+      setStats(content.stats)
+      setProjects(content.projects)
     } catch (error) {
       console.error('Error loading our work content:', error)
     } finally {
@@ -139,61 +141,94 @@ export function OurWorkSection() {
             </p>
           </motion.div>
 
-          <div className="max-w-6xl mx-auto space-y-16">
-            {projects.map((project, index) => (
-              <motion.div
-                key={project.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-                className={`grid md:grid-cols-2 gap-8 items-center ${
-                  index % 2 === 1 ? 'md:grid-flow-dense' : ''
-                }`}
-              >
-                {/* Text Content */}
-                <div className={index % 2 === 1 ? 'md:col-start-2' : ''}>
-                  <div className="inline-block px-4 py-2 bg-yellow-400 text-purple-900 rounded-full text-sm font-bold mb-4">
-                    {project.category}
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-black text-purple-900 mb-4">
-                    {project.title}
-                  </h3>
-                  <p className="text-gray-700 mb-6 leading-relaxed">
-                    {project.description}
-                  </p>
-                  <div className="space-y-3">
-                    <div className="font-bold text-purple-900 mb-2">Key Details:</div>
-                    {project.details.map((detail, idx) => (
-                      <div key={idx} className="flex items-start gap-3">
-                        <span className="text-yellow-500 text-lg mt-1">👉</span>
-                        <span className="text-gray-700">{detail}</span>
+          <div className="max-w-7xl mx-auto">
+            {projects && projects.length > 0 ? (
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
+                {projects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.15, duration: 0.6 }}
+                    className="group"
+                  >
+                    {/* Image Container */}
+                    <div className="relative mb-8 overflow-hidden rounded-3xl shadow-2xl bg-gradient-to-br from-purple-50 to-yellow-50 p-2">
+                      <div className="relative overflow-hidden rounded-2xl">
+                        <img
+                          src={project.image || '/placeholder-project.jpg'}
+                          alt={project.title}
+                          className="w-full h-80 md:h-96 object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute top-6 left-6">
+                          <span className="inline-flex items-center px-4 py-2 bg-yellow-400 text-purple-900 rounded-full text-sm font-bold shadow-lg backdrop-blur-sm bg-opacity-95">
+                            {project.category}
+                          </span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
 
-                {/* Image */}
-                <div className={index % 2 === 1 ? 'md:col-start-1 md:row-start-1' : ''}>
-                  <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                    <img
-                      src={project.image || '/placeholder-project.jpg'}
-                      alt={project.title}
-                      className="w-full h-96 object-cover"
-                    />
+                    {/* Content Container */}
+                    <div className="px-2">
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: index * 0.2 + 0.3 }}
+                      >
+                        <h3 className="text-2xl md:text-3xl font-black text-purple-900 mb-4 leading-tight">
+                          {project.title}
+                        </h3>
+                        <p className="text-gray-700 mb-8 leading-relaxed text-lg">
+                          {project.description}
+                        </p>
+
+                        {/* Key Details */}
+                        <div className="space-y-4">
+                          <h4 className="font-bold text-purple-900 text-lg">Key Highlights:</h4>
+                          <div className="grid gap-3">
+                            {project.details.slice(0, 3).map((detail, idx) => (
+                              <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, x: -10 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.2 + 0.4 + idx * 0.1 }}
+                                className="flex items-start gap-4 p-3 bg-gradient-to-r from-purple-50 to-yellow-50 rounded-xl border border-purple-100"
+                              >
+                                <div className="flex-shrink-0 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center shadow-sm">
+                                  <span className="text-purple-900 font-bold text-sm">{idx + 1}</span>
+                                </div>
+                                <span className="text-gray-700 leading-relaxed pt-1">{detail}</span>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-20"
+              >
+                <div className="max-w-md mx-auto">
+                  <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="text-4xl">🚀</span>
                   </div>
+                  <h3 className="text-2xl font-bold text-purple-900 mb-3">No Projects Yet</h3>
+                  <p className="text-gray-600 text-lg">
+                    Add your first project from the admin panel to showcase your impact and stories.
+                  </p>
                 </div>
               </motion.div>
-            ))}
+            )}
           </div>
-
-          {projects.length === 0 && !loading && (
-            <div className="text-center py-12">
-              <p className="text-xl text-gray-600">
-                No projects added yet. Add projects from the admin panel!
-              </p>
-            </div>
-          )}
         </div>
       </section>
     </>

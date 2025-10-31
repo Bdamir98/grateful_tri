@@ -6,17 +6,33 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { supabase } from '@/lib/supabase/client'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Edit } from 'lucide-react'
+import { ImageUpload } from '@/components/admin/ImageUpload'
+
+interface Project {
+  id: string
+  title: string
+  description: string | null
+  image_url: string | null
+  external_link: string | null
+  status: 'active' | 'completed' | 'upcoming'
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<any[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     image_url: '',
-    link: '',
+    external_link: '',
+    status: 'active' as 'active' | 'completed' | 'upcoming',
   })
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     loadProjects()
@@ -31,21 +47,86 @@ export default function ProjectsPage() {
     setProjects(data || [])
   }
 
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      image_url: '',
+      external_link: '',
+      status: 'active',
+    })
+    setEditingProject(null)
+    setShowForm(false)
+  }
+
+  const handleEdit = (project: Project) => {
+    setEditingProject(project)
+    setFormData({
+      title: project.title,
+      description: project.description || '',
+      image_url: project.image_url || '',
+      external_link: project.external_link || '',
+      status: project.status,
+    })
+    setShowForm(true)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
 
-    await supabase.from('projects').insert([formData])
+    try {
+      const projectData = {
+        title: formData.title,
+        description: formData.description || null,
+        image_url: formData.image_url || null,
+        external_link: formData.external_link || null,
+        status: formData.status,
+        is_active: true,
+      }
 
-    setFormData({ title: '', description: '', image_url: '', link: '' })
-    setShowForm(false)
-    loadProjects()
+      if (editingProject) {
+        // Update existing project
+        const { error } = await supabase
+          .from('projects')
+          .update(projectData)
+          .eq('id', editingProject.id)
+
+        if (error) throw error
+      } else {
+        // Create new project
+        const { error } = await supabase
+          .from('projects')
+          .insert([projectData])
+
+        if (error) throw error
+      }
+
+      resetForm()
+      loadProjects()
+    } catch (error) {
+      console.error('Error saving project:', error)
+      alert('Failed to save project. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this project?')) return
 
-    await supabase.from('projects').delete().eq('id', id)
-    loadProjects()
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      loadProjects()
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      alert('Failed to delete project. Please try again.')
+    }
   }
 
   return (
@@ -55,7 +136,7 @@ export default function ProjectsPage() {
           <h1 className="text-3xl font-bold mb-2">Projects</h1>
           <p className="text-gray-600">Manage your project portfolio</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button onClick={() => { resetForm(); setShowForm(true); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Project
         </Button>
@@ -64,7 +145,7 @@ export default function ProjectsPage() {
       {showForm && (
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Add New Project</CardTitle>
+            <CardTitle>{editingProject ? 'Edit Project' : 'Add New Project'}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,25 +168,30 @@ export default function ProjectsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Image URL</Label>
-                <Input
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  required
+                <Label>Project Image</Label>
+                <ImageUpload
+                  label="Project Image"
+                  currentImage={formData.image_url}
+                  onUpload={(url) => setFormData({ ...formData, image_url: url })}
+                  storagePath="projects"
+                  helpText="Upload a project image (recommended: landscape)"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Link (optional)</Label>
+                <Label>External Link (optional)</Label>
                 <Input
-                  value={formData.link}
-                  onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+                  value={formData.external_link}
+                  onChange={(e) => setFormData({ ...formData, external_link: e.target.value })}
+                  placeholder="https://..."
                 />
               </div>
 
               <div className="flex space-x-2">
-                <Button type="submit">Add Project</Button>
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <Button type="submit" disabled={loading}>
+                  {loading ? 'Saving...' : (editingProject ? 'Update Project' : 'Add Project')}
+                </Button>
+                <Button type="button" variant="outline" onClick={resetForm}>
                   Cancel
                 </Button>
               </div>
@@ -119,7 +205,7 @@ export default function ProjectsPage() {
           <Card key={project.id}>
             <CardHeader>
               <img
-                src={project.image_url}
+                src={project.image_url || '/placeholder-course.jpg'}
                 alt={project.title}
                 className="w-full h-40 object-cover rounded-lg mb-4"
               />
@@ -127,14 +213,24 @@ export default function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-600 mb-4">{project.description}</p>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => handleDelete(project.id)}
-              >
-                <Trash2 className="mr-2 h-3 w-3" />
-                Delete
-              </Button>
+              <div className="flex space-x-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEdit(project)}
+                >
+                  <Edit className="mr-2 h-3 w-3" />
+                  Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleDelete(project.id)}
+                >
+                  <Trash2 className="mr-2 h-3 w-3" />
+                  Delete
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}

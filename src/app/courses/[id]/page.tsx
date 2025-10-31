@@ -27,7 +27,7 @@ export default function CourseDetailPage() {
   }, [params.id, user])
 
   const loadCourse = async () => {
-    const courseData = await CourseService.getCourseWithContent(params.id as string)
+    const courseData = await CourseService.getCourseWithContent(params.id as string, true)
     setCourse(courseData)
 
     if (user) {
@@ -88,9 +88,19 @@ export default function CourseDetailPage() {
               />
               <h1 className="text-4xl font-black mb-4">{course.title}</h1>
               <p className="text-lg text-gray-700 mb-6">{course.description}</p>
-              <p className="text-gray-600 mb-4">
-                Instructor: {course.instructor_name || 'The Grateful Tribe'}
-              </p>
+              <div className="flex items-center gap-4 mb-6 text-sm text-gray-600">
+                <span>Instructor: {course.instructor_name || 'The Grateful Tribe'}</span>
+                <span>•</span>
+                <span>{course.totalLectures} lectures</span>
+                <span>•</span>
+                <span>{Math.floor((course.totalDuration || 0) / 3600)}h {Math.floor(((course.totalDuration || 0) % 3600) / 60)}m total</span>
+                {course.freeLectures && course.freeLectures > 0 && (
+                  <>
+                    <span>•</span>
+                    <span className="text-green-600 font-medium">{course.freeLectures} free</span>
+                  </>
+                )}
+              </div>
 
               <div className="mt-8">
                 <CourseContent
@@ -99,6 +109,7 @@ export default function CourseDetailPage() {
                   totalLectures={course.totalLectures || 0}
                   totalDuration={course.totalDuration || 0}
                   isEnrolled={isEnrolled}
+                  userType={isEnrolled ? 'paid' : (user ? 'free' : 'guest')}
                 />
               </div>
             </div>
@@ -109,11 +120,23 @@ export default function CourseDetailPage() {
                   <div className="text-center mb-6">
                     <p className="text-4xl font-bold text-primary mb-2">${course.price}</p>
                     <p className="text-gray-600">One-time payment</p>
+                    {course.freeLectures && course.freeLectures > 0 && (
+                      <p className="text-sm text-green-600 mt-2">
+                        {course.freeLectures} free {course.freeLectures === 1 ? 'lecture' : 'lectures'} available
+                      </p>
+                    )}
                   </div>
                   {isEnrolled ? (
-                    <Button className="w-full" size="lg" disabled>
-                      Already Enrolled
-                    </Button>
+                    <div className="space-y-3">
+                      <Button 
+                        className="w-full" 
+                        size="lg"
+                        onClick={() => router.push(`/courses/${course.id}/learn`)}
+                      >
+                        Continue Learning
+                      </Button>
+                      <p className="text-center text-sm text-green-600">✓ You're enrolled in this course</p>
+                    </div>
                   ) : (
                     <Button 
                       className="w-full" 
@@ -127,8 +150,30 @@ export default function CourseDetailPage() {
                   <div className="mt-6 space-y-2 text-sm text-gray-600">
                     <p>✓ Lifetime access</p>
                     <p>✓ All course materials</p>
+                    <p>✓ Downloadable resources</p>
                     <p>✓ Certificate of completion</p>
+                    <p>✓ 30-Day Money-Back Guarantee</p>
+                    <p>✓ Full Lifetime Access</p>
                   </div>
+                  
+                  {course.freeLectures && course.freeLectures > 0 && !isEnrolled && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-800 font-medium">
+                        🎯 Try before you buy!
+                      </p>
+                      <p className="text-xs text-green-700 mt-1">
+                        Access {course.freeLectures} free {course.freeLectures === 1 ? 'lesson' : 'lessons'} to get started
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2 w-full border-green-300 text-green-700 hover:bg-green-100"
+                        onClick={() => router.push(`/courses/${course.id}/learn`)}
+                      >
+                        Start Free Lessons
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

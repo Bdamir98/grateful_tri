@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Upload, X, Eye, Video } from 'lucide-react'
@@ -22,9 +22,20 @@ export function ImageUpload({ label, currentImage, onUpload, storagePath = 'webs
   const [preview, setPreview] = useState<string | null>(currentImage || null)
   const [showPreview, setShowPreview] = useState(false)
 
+  // Update preview when currentImage changes (for editing existing items)
+  useEffect(() => {
+    console.log('ImageUpload currentImage changed:', currentImage)
+    setPreview(currentImage || null)
+  }, [currentImage])
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) {
+      console.log('No file selected')
+      return
+    }
+
+    console.log('File selected:', file.name, 'Size:', file.size)
 
     // Validate file size
     const fileSizeMB = file.size / (1024 * 1024)
@@ -33,9 +44,10 @@ export function ImageUpload({ label, currentImage, onUpload, storagePath = 'webs
       return
     }
 
-    // Show local preview
+    // Show local preview immediately
     const localPreview = URL.createObjectURL(file)
     setPreview(localPreview)
+    console.log('Local preview set:', localPreview)
 
     setUploading(true)
 
@@ -44,6 +56,8 @@ export function ImageUpload({ label, currentImage, onUpload, storagePath = 'webs
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
       const filePath = `${storagePath}/${fileName}`
 
+      console.log('Uploading to path:', filePath)
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('website-assets')
         .upload(filePath, file, {
@@ -51,26 +65,46 @@ export function ImageUpload({ label, currentImage, onUpload, storagePath = 'webs
           upsert: false
         })
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        throw uploadError
+      }
+
+      console.log('Upload successful:', uploadData)
 
       const { data: urlData } = supabase.storage
         .from('website-assets')
         .getPublicUrl(filePath)
 
-      setPreview(urlData.publicUrl)
-      onUpload(urlData.publicUrl)
+      console.log('Public URL:', urlData.publicUrl)
+
+      const publicUrl = urlData.publicUrl
+      setPreview(publicUrl)
+      
+      // Call onUpload callback immediately
+      if (onUpload) {
+        console.log('Calling onUpload with URL:', publicUrl)
+        onUpload(publicUrl)
+      }
+      
+      alert('Image uploaded successfully!')
     } catch (error) {
       console.error('Upload error:', error)
       alert('Failed to upload image. Please try again.')
+      // Reset to current image if upload failed
       setPreview(currentImage || null)
     } finally {
       setUploading(false)
+      // Clear the input value so the same file can be selected again if needed
+      e.target.value = ''
     }
   }
 
   const clearImage = () => {
     setPreview(null)
-    onUpload('')
+    if (onUpload) {
+      onUpload('')
+    }
   }
 
   const isVideo = preview && (preview.includes('.mp4') || preview.includes('.webm') || preview.includes('.mov'))
@@ -132,7 +166,15 @@ export function ImageUpload({ label, currentImage, onUpload, storagePath = 'webs
           <Button
             type="button"
             variant="outline"
-            onClick={() => document.getElementById(`file-upload-${label.replace(/\s+/g, '-')}`)?.click()}
+            onClick={() => {
+              const input = document.getElementById(`file-upload-${label.replace(/\s+/g, '-')}`) as HTMLInputElement
+              if (input) {
+                console.log('Clicking file input')
+                input.click()
+              } else {
+                console.error('File input not found')
+              }
+            }}
             disabled={uploading}
             className="w-full"
           >

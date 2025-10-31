@@ -14,7 +14,7 @@ export function HeaderEditor() {
   const [saving, setSaving] = useState(false)
   
   const [settings, setSettings] = useState({
-    logo: '/TGT-LOGO-removebg.png',
+    logo: '/TGT-LOGO-removebg.png.png',
     siteName: 'The Grateful Tribe',
     tagline: 'Empowering Communities'
   })
@@ -37,9 +37,9 @@ export function HeaderEditor() {
 
       if (data?.setting_value) {
         setSettings({
-          logo: data.setting_value.logo || settings.logo,
-          siteName: data.setting_value.siteName || settings.siteName,
-          tagline: data.setting_value.tagline || settings.tagline
+          logo: data.setting_value.logo || '/TGT-LOGO-removebg.png.png',
+          siteName: data.setting_value.siteName || 'The Grateful Tribe',
+          tagline: data.setting_value.tagline || 'Empowering Communities'
         })
       }
     } catch (error) {

@@ -10,6 +10,7 @@ interface FooterSettings {
   brandName: string
   brandDescription: string
   copyrightText: string
+  logo: string
   socialLinks: {
     facebook: string
     youtube: string
@@ -30,6 +31,7 @@ export function Footer() {
     brandName: 'The Grateful Tribe',
     brandDescription: 'Empowering communities through digital opportunities and education.',
     copyrightText: 'All rights reserved.',
+    logo: '',
     socialLinks: {
       facebook: '',
       youtube: '',
@@ -80,6 +82,7 @@ export function Footer() {
           brandName: data.setting_value.brandName || settings.brandName,
           brandDescription: data.setting_value.brandDescription || settings.brandDescription,
           copyrightText: data.setting_value.copyrightText || settings.copyrightText,
+          logo: data.setting_value.logo || settings.logo,
           socialLinks: data.setting_value.socialLinks || settings.socialLinks,
           sections: data.setting_value.sections || settings.sections
         })
@@ -103,9 +106,17 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand Section */}
           <div className="md:col-span-1">
-            <h3 className="text-2xl font-black mb-4 bg-gradient-to-r from-purple-400 to-yellow-400 bg-clip-text text-transparent">
-              {settings.brandName}
-            </h3>
+            {settings.logo ? (
+              <img 
+                src={settings.logo} 
+                alt={settings.brandName}
+                className="h-12 mb-4 object-contain"
+              />
+            ) : (
+              <h3 className="text-2xl font-black mb-4 bg-gradient-to-r from-purple-400 to-yellow-400 bg-clip-text text-transparent">
+                {settings.brandName}
+              </h3>
+            )}
             <p className="text-gray-400 leading-relaxed mb-6">
               {settings.brandDescription}
             </p>

@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Save, Plus, Trash2, Link as LinkIcon, Share2 } from 'lucide-react'
+import { ImageUpload } from '@/components/admin/ImageUpload'
 
 interface FooterLink {
   label: string
@@ -27,6 +28,7 @@ export function FooterEditor() {
     brandName: 'The Grateful Tribe',
     brandDescription: 'Empowering communities through digital opportunities and education.',
     copyrightText: 'All rights reserved.',
+    logo: '',
     socialLinks: {
       facebook: '',
       youtube: '',
@@ -76,6 +78,7 @@ export function FooterEditor() {
           brandName: data.setting_value.brandName || settings.brandName,
           brandDescription: data.setting_value.brandDescription || settings.brandDescription,
           copyrightText: data.setting_value.copyrightText || settings.copyrightText,
+          logo: data.setting_value.logo || settings.logo,
           socialLinks: data.setting_value.socialLinks || settings.socialLinks,
           sections: data.setting_value.sections || settings.sections
         })
@@ -207,6 +210,16 @@ export function FooterEditor() {
               value={settings.brandName}
               onChange={(e) => updateBrandInfo('brandName', e.target.value)}
               placeholder="The Grateful Tribe"
+            />
+          </div>
+
+          <div>
+            <Label>Footer Logo</Label>
+            <ImageUpload
+              label="Upload footer logo"
+              currentImage={settings.logo}
+              onUpload={(url: string) => updateBrandInfo('logo', url)}
+              storagePath="branding"
             />
           </div>
 
